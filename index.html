@@ -1,1321 +1,894 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Concertación Carabobo — Portal Estratégico Regional</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coordinación Municipal · Concertación Carabobo</title>
+<meta name="description" content="Herramienta de gestión de equipos municipales y parroquiales — Concertación Carabobo">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <style>
-/* ================================================================
-   VARIABLES
-   ================================================================ */
 :root{
-  --azul:#1A3A8F;
-  --azul-med:#2451B7;
-  --azul-light:#3B6DD4;
-  --azul-pale:#EAF0FB;
-  --verde:#1A8C4E;
-  --verde-light:#25B868;
-  --verde-pale:#E6F7EF;
-  --rojo:#C0392B;
-  --rojo-pale:#FDECEA;
-  --blanco:#FFFFFF;
-  --gris-5:#F7F9FC;
-  --gris-10:#F0F4FA;
-  --gris-20:#E2E8F3;
-  --gris-40:#BEC9DC;
-  --gris-60:#7A8FA8;
-  --gris-80:#3A4F68;
-  --negro:#0C1929;
-  --shadow-xs:0 1px 4px rgba(26,58,143,.08);
-  --shadow-sm:0 2px 10px rgba(26,58,143,.10);
-  --shadow:0 4px 24px rgba(26,58,143,.13);
-  --shadow-lg:0 8px 48px rgba(26,58,143,.18);
-  --r:14px;
-  --r-sm:8px;
-  --sidebar:290px;
-  --hh:68px;
-  --ease:.28s cubic-bezier(.4,0,.2,1);
+  --navy-950:#050b1f;
+  --navy-900:#0a1636;
+  --navy-800:#0f1f4a;
+  --navy-700:#152a63;
+  --navy-600:#1c3680;
+  --gold-500:#c49a22;
+  --gold-400:#dbb94a;
+  --gold-300:#ecd587;
+  --paper:#f4f2ea;
+  --ink:#0a1636;
+  --ink-soft:#4a5578;
+  --line:rgba(10,22,54,0.12);
+  --line-dark:rgba(219,185,74,0.22);
+  --danger:#b3452f;
+  --ok:#2f7a4f;
+  --radius:14px;
+  --shadow-lg:0 20px 50px -20px rgba(5,11,31,0.45);
+  --shadow-sm:0 4px 14px -8px rgba(5,11,31,0.3);
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+*{box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{
-  font-family:'DM Sans',sans-serif;
-  background:var(--gris-5);
-  color:var(--negro);
+  margin:0;
+  background:
+    radial-gradient(ellipse 1200px 500px at 15% -5%, rgba(28,54,128,0.35), transparent 60%),
+    radial-gradient(ellipse 900px 500px at 100% 0%, rgba(196,154,34,0.12), transparent 55%),
+    var(--navy-950);
+  color:var(--paper);
+  font-family:'Inter', system-ui, sans-serif;
   min-height:100vh;
-  overflow-x:hidden;
-}
-a{color:inherit;text-decoration:none;}
-button{cursor:pointer;font-family:inherit;border:none;}
-img{max-width:100%;display:block;}
-::-webkit-scrollbar{width:5px;}
-::-webkit-scrollbar-track{background:var(--gris-5);}
-::-webkit-scrollbar-thumb{background:var(--azul-light);border-radius:3px;}
- 
-/* ================================================================
-   HEADER
-   ================================================================ */
-#hdr{
-  position:fixed;top:0;left:0;right:0;
-  height:var(--hh);
-  background:rgba(255,255,255,.94);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--gris-20);
-  display:flex;align-items:center;
-  padding:0 20px;gap:14px;
-  z-index:1000;
-  box-shadow:var(--shadow-sm);
-}
-.hdr-logo{
-  display:flex;align-items:center;gap:10px;flex-shrink:0;
-}
-.hdr-logo img{
-  height:46px;width:46px;border-radius:9px;
-  object-fit:cover;box-shadow:var(--shadow-xs);
-}
-.hdr-logo-txt{
-  font-family:'Syne',sans-serif;
-  font-weight:800;font-size:.8rem;
-  line-height:1.2;color:var(--azul);
-}
-.hdr-logo-txt span{color:var(--verde);}
- 
-.hdr-banner{
-  flex:1;height:50px;border-radius:10px;
-  overflow:hidden;position:relative;
-}
-.hdr-banner img{
-  width:100%;height:100%;
-  object-fit:cover;object-position:center 30%;
-}
-.hdr-banner::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,rgba(26,58,143,.6) 0%,rgba(26,58,143,.1) 50%,rgba(26,140,78,.35) 100%);
-}
-.hdr-banner-txt{
-  position:absolute;left:14px;top:50%;transform:translateY(-50%);
-  z-index:1;
-  font-family:'Syne',sans-serif;font-weight:700;
-  color:#fff;font-size:.75rem;letter-spacing:.07em;
-  text-shadow:0 1px 4px rgba(0,0,0,.5);
-}
- 
-#hdr nav{
-  display:flex;align-items:center;gap:3px;flex-shrink:0;
-}
-.nb{
-  background:none;border:none;
-  padding:7px 13px;border-radius:8px;
-  font-size:.76rem;font-weight:500;
-  color:var(--gris-80);transition:var(--ease);
-  white-space:nowrap;
-}
-.nb:hover,.nb.on{background:var(--azul-pale);color:var(--azul);}
-.nb.cta{background:var(--azul);color:#fff;margin-left:4px;}
-.nb.cta:hover{background:var(--azul-med);}
- 
-#mb-toggle{
-  display:none;background:none;
-  flex-direction:column;gap:5px;padding:6px;
-}
-#mb-toggle span{
-  display:block;width:22px;height:2px;
-  background:var(--azul);border-radius:2px;
-  transition:var(--ease);
-}
- 
-/* ================================================================
-   LAYOUT
-   ================================================================ */
-#layout{
-  display:flex;
-  padding-top:var(--hh);
-  min-height:100vh;
-}
- 
-/* ================================================================
-   SIDEBAR
-   ================================================================ */
-#sb{
-  width:var(--sidebar);flex-shrink:0;
-  background:#fff;
-  border-right:1px solid var(--gris-20);
-  position:sticky;top:var(--hh);
-  height:calc(100vh - var(--hh));
-  overflow-y:auto;
-  padding:18px 12px 30px;
-  box-shadow:2px 0 14px rgba(26,58,143,.05);
-  transition:transform var(--ease);
-}
-.sb-lbl{
-  font-family:'Syne',sans-serif;
-  font-size:.6rem;font-weight:700;
-  letter-spacing:.14em;text-transform:uppercase;
-  color:var(--gris-60);margin-bottom:10px;padding:0 4px;
-}
-.sb-region{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 12px;
-  background:linear-gradient(135deg,var(--azul-pale),#fff);
-  border:1px solid var(--azul-pale);
-  border-radius:var(--r-sm);
-  margin-bottom:16px;
-}
-.sb-region img{width:36px;height:24px;object-fit:cover;border-radius:4px;box-shadow:var(--shadow-xs);}
-.sb-region-txt .nm{font-size:.78rem;font-weight:700;color:var(--azul);}
-.sb-region-txt .st{font-size:.65rem;color:var(--gris-60);}
- 
-/* Municipio card */
-.mun-card{
-  border-radius:var(--r-sm);
-  border:1px solid var(--gris-20);
-  margin-bottom:6px;
-  overflow:hidden;
-  transition:var(--ease);
-  background:var(--gris-5);
-}
-.mun-card:hover{border-color:var(--azul-light);}
-.mun-header{
-  display:flex;align-items:center;gap:8px;
-  padding:9px 10px;cursor:pointer;
-}
-.mun-flag{
-  width:28px;height:18px;border-radius:3px;
-  object-fit:cover;flex-shrink:0;
-  box-shadow:var(--shadow-xs);
-}
-.mun-flag-placeholder{
-  width:28px;height:18px;border-radius:3px;
-  background:var(--gris-20);flex-shrink:0;
-}
-.mun-info{flex:1;min-width:0;}
-.mun-name{font-size:.75rem;font-weight:700;color:var(--gris-80);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mun-coord-name{font-size:.67rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mun-status-dot{
-  width:8px;height:8px;border-radius:50%;flex-shrink:0;
-  background:var(--rojo);transition:var(--ease);
-}
-.mun-status-dot.ok{background:var(--verde);}
-.mun-toggle-icon{font-size:.65rem;color:var(--gris-60);flex-shrink:0;transition:transform var(--ease);}
-.mun-card.open .mun-toggle-icon{transform:rotate(180deg);}
-.mun-body{
-  display:none;padding:8px 10px 12px;
-  border-top:1px solid var(--gris-20);
-}
-.mun-card.open .mun-body{display:block;}
-.mun-field{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;}
-.mun-field label{font-size:.62rem;font-weight:600;color:var(--gris-60);text-transform:uppercase;letter-spacing:.08em;}
-.mun-field input{
-  border:1px solid var(--gris-20);border-radius:6px;
-  padding:6px 8px;font-size:.72rem;font-family:inherit;
-  background:#fff;outline:none;transition:var(--ease);
-}
-.mun-field input:focus{border-color:var(--azul-light);box-shadow:0 0 0 2px rgba(59,109,212,.1);}
-.mun-save{
-  width:100%;background:var(--azul);color:#fff;
-  border-radius:6px;padding:7px;font-size:.7rem;font-weight:600;
-  transition:var(--ease);
-}
-.mun-save:hover{background:var(--azul-med);}
-.mun-save.ok{background:var(--verde);}
-.mun-del{
-  width:100%;background:none;color:var(--gris-60);
-  font-size:.63rem;text-decoration:underline;
-  margin-top:5px;padding:2px;
-  transition:var(--ease);
-}
-.mun-del:hover{color:var(--rojo);}
- 
-/* ================================================================
-   MAIN
-   ================================================================ */
-#main{
-  flex:1;padding:26px 26px 50px;min-width:0;
-}
-.section{display:none;}
-.section.active{display:block;}
- 
-/* Page header */
-.ph{margin-bottom:22px;}
-.ph-bc{font-size:.68rem;color:var(--gris-60);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
-.ph-bc span{color:var(--azul);font-weight:600;}
-.ph h1{
-  font-family:'Syne',sans-serif;
-  font-size:1.45rem;font-weight:800;
-  color:var(--azul);margin-bottom:3px;
-}
-.ph p{font-size:.8rem;color:var(--gris-60);}
- 
-/* Stats */
-.stats-row{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:16px;margin-bottom:22px;
-}
-.stat{
-  background:#fff;border-radius:var(--r);
-  border:1px solid var(--gris-20);
-  padding:20px 22px;
-  box-shadow:var(--shadow-sm);
-  position:relative;overflow:hidden;
-  transition:transform var(--ease),box-shadow var(--ease);
-}
-.stat:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
-.stat::before{
-  content:'';position:absolute;top:0;left:0;
-  width:4px;height:100%;border-radius:2px 0 0 2px;
-  background:var(--azul);
-}
-.stat.g::before{background:var(--verde);}
-.stat.a::before{background:#E8820C;}
-.stat-n{
-  font-family:'Syne',sans-serif;
-  font-size:1.9rem;font-weight:800;
-  color:var(--azul);line-height:1;margin-bottom:5px;
-}
-.stat.g .stat-n{color:var(--verde);}
-.stat.a .stat-n{color:#E8820C;}
-.stat-l{font-size:.72rem;color:var(--gris-60);font-weight:500;}
- 
-/* Registro banner */
-.reg-banner{
-  background:linear-gradient(135deg,var(--verde) 0%,#1DAD5F 100%);
-  border-radius:var(--r);padding:20px 24px;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:14px;margin-bottom:22px;
-  position:relative;overflow:hidden;
-}
-.reg-banner::before{
-  content:'';position:absolute;right:-30px;top:-30px;
-  width:160px;height:160px;border-radius:50%;
-  background:rgba(255,255,255,.07);
-}
-.reg-banner h3{
-  font-family:'Syne',sans-serif;font-size:.95rem;
-  font-weight:800;color:#fff;margin-bottom:3px;
-}
-.reg-banner p{font-size:.75rem;color:rgba(255,255,255,.8);}
-.reg-banner a{
-  background:#fff;color:var(--verde);
-  border-radius:8px;padding:9px 20px;
-  font-size:.8rem;font-weight:700;
-  box-shadow:0 2px 14px rgba(0,0,0,.15);
-  white-space:nowrap;transition:var(--ease);
-}
-.reg-banner a:hover{box-shadow:0 4px 22px rgba(0,0,0,.22);transform:translateY(-1px);}
- 
-/* a */
-.-card{
-  background:#fff;border-radius:var(--r);
-  border:1px solid var(--gris-20);
-  box-shadow:var(--shadow);
-  overflow:hidden;margin-bottom:22px;
-}
-.-head{
-  padding:14px 20px;
-  background:linear-gradient(135deg,var(--azul) 0%,var(--azul-med) 100%);
-  display:flex;align-items:center;gap:10px;
-}
-.-head h2{
-  font-family:'Syne',sans-serif;
-  font-size:.9rem;font-weight:700;color:#fff;
-}
-.pulse-dot{
-  width:10px;height:10px;border-radius:50%;
-  background:var(--verde-light);
-  box-shadow:0 0 0 3px rgba(37,184,104,.3);
-  animation:pulse 2s infinite;flex-shrink:0;
-}
-@keyframes pulse{
-  0%,100%{box-shadow:0 0 0 3px rgba(37,184,104,.3);}
-  50%{box-shadow:0 0 0 7px rgba(37,184,104,.08);}
-}
-.-card iframe{width:100%;height:460px;border:none;display:block;}
- 
-/* Foto liderazgo */
-.card{
-  background:#fff;border-radius:var(--r);
-  border:1px solid var(--gris-20);
-  box-shadow:var(--shadow-sm);overflow:hidden;
-}
-.card-hd{
-  padding:16px 20px 12px;
-  border-bottom:1px solid var(--gris-20);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.card-hd h3{
-  font-family:'Syne',sans-serif;
-  font-size:.9rem;font-weight:700;color:var(--azul);
-}
- 
-/* ================================================================
-   ORGANIGRAMA CDR
-   ================================================================ */
-.org-wrap{max-width:860px;}
-.org-lbl{
-  font-family:'Syne',sans-serif;
-  font-size:.6rem;font-weight:700;
-  letter-spacing:.15em;text-transform:uppercase;
-  color:var(--gris-60);margin-bottom:14px;
-  display:flex;align-items:center;gap:8px;
-}
-.org-lbl::after{content:'';flex:1;height:1px;background:var(--gris-20);}
- 
-.org-top{
-  display:flex;gap:14px;justify-content:center;
-  flex-wrap:wrap;margin-bottom:24px;
-}
-.org-node{
-  background:#fff;border:2px solid var(--azul-pale);
-  border-radius:var(--r);padding:16px 20px;
-  text-align:center;min-width:195px;
-  box-shadow:var(--shadow-sm);
-  transition:var(--ease);
-}
-.org-node:hover{border-color:var(--azul-light);box-shadow:var(--shadow);}
-.org-node.top{
-  border-color:var(--azul);
-  background:linear-gradient(135deg,var(--azul-pale),#fff);
-}
-.org-node .cargo{
-  font-size:.62rem;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;
-  color:var(--gris-60);margin-bottom:5px;
-}
-.org-node .nombre{
-  font-family:'Syne',sans-serif;
-  font-size:.88rem;font-weight:700;color:var(--azul);
-}
-.org-node .nombre.vacio{color:var(--gris-40);font-style:italic;}
-.org-node .tel{font-size:.68rem;color:var(--gris-60);margin-top:3px;}
-.edit-btn{
-  font-size:.62rem;color:var(--gris-60);
-  background:none;text-decoration:underline;
-  margin-top:5px;transition:var(--ease);
-}
-.edit-btn:hover{color:var(--azul);}
- 
-/* Secretarías grid */
-.secs-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(195px,1fr));
-  gap:10px;
-}
-.sec-node{
-  background:#fff;border:1px solid var(--gris-20);
-  border-radius:var(--r-sm);overflow:hidden;
-  transition:var(--ease);
-}
-.sec-node:hover{border-color:var(--azul-light);box-shadow:var(--shadow-sm);}
-.sec-node-hd{
-  padding:10px 12px;display:flex;align-items:flex-start;
-  justify-content:space-between;cursor:pointer;
-  background:var(--gris-5);
-}
-.sec-cargo{font-size:.7rem;font-weight:700;color:var(--gris-80);line-height:1.3;}
-.sec-nombre{font-size:.68rem;color:var(--azul);font-weight:500;margin-top:2px;}
-.sec-chevron{font-size:.65rem;color:var(--gris-60);flex-shrink:0;transition:transform var(--ease);}
-.sec-node.open .sec-chevron{transform:rotate(180deg);}
-.sec-node-bd{
-  display:none;padding:10px 12px 12px;
-  border-top:1px solid var(--gris-20);
-}
-.sec-node.open .sec-node-bd{display:block;}
-.sf{display:flex;flex-direction:column;gap:3px;margin-bottom:7px;}
-.sf label{font-size:.6rem;font-weight:600;color:var(--gris-60);text-transform:uppercase;letter-spacing:.08em;}
-.sf input{
-  border:1px solid var(--gris-20);border-radius:5px;
-  padding:5px 8px;font-size:.7rem;font-family:inherit;
-  background:#fff;outline:none;transition:var(--ease);
-}
-.sf input:focus{border-color:var(--azul-light);}
-.prop-list{list-style:none;margin-bottom:7px;}
-.prop-list li{
-  font-size:.68rem;color:var(--gris-80);
-  padding:3px 0;border-bottom:1px solid var(--gris-5);
-  display:flex;align-items:flex-start;gap:5px;
-}
-.prop-list li::before{content:'›';color:var(--azul);font-weight:700;}
-.add-row{display:flex;gap:5px;}
-.add-row input{
-  flex:1;border:1px solid var(--gris-20);border-radius:5px;
-  padding:5px 7px;font-size:.68rem;outline:none;transition:var(--ease);
-}
-.add-row input:focus{border-color:var(--azul-light);}
-.add-row button{
-  background:var(--azul);color:#fff;border-radius:5px;
-  padding:5px 9px;font-size:.68rem;transition:var(--ease);
-}
-.add-row button:hover{background:var(--azul-med);}
-.del-sec{
-  font-size:.62rem;color:var(--gris-60);
-  background:none;text-decoration:underline;
-  margin-top:6px;transition:var(--ease);
-}
-.del-sec:hover{color:var(--rojo);}
- 
-/* ================================================================
-   ESTATUTOS
-   ================================================================ */
-.info-box{
-  background:linear-gradient(135deg,var(--azul) 0%,var(--azul-med) 100%);
-  border-radius:var(--r);padding:30px;color:#fff;
-  margin-bottom:22px;position:relative;overflow:hidden;
-}
-.info-box::before{
-  content:'';position:absolute;right:-50px;top:-50px;
-  width:220px;height:220px;border-radius:50%;
-  background:rgba(255,255,255,.05);
-}
-.info-box h2{
-  font-family:'Syne',sans-serif;font-size:1.3rem;
-  font-weight:800;margin-bottom:10px;
-}
-.info-box p{font-size:.82rem;opacity:.82;line-height:1.75;max-width:580px;}
-.docs-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:14px;
-}
-.doc-card{
-  background:#fff;border:1px solid var(--gris-20);
-  border-radius:var(--r);padding:22px;
-  text-align:center;box-shadow:var(--shadow-sm);
-  transition:transform var(--ease),box-shadow var(--ease);
-  cursor:pointer;
-}
-.doc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--azul-light);}
-.doc-icon{font-size:2rem;margin-bottom:10px;}
-.doc-name{font-size:.8rem;font-weight:700;color:var(--azul);margin-bottom:3px;}
-.doc-desc{font-size:.7rem;color:var(--gris-60);}
- 
-/* ================================================================
-   NOTICIAS
-   ================================================================ */
-.news-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(270px,1fr));
-  gap:16px;
-}
-.news-card{
-  background:#fff;border:1px solid var(--gris-20);
-  border-radius:var(--r);overflow:hidden;
-  box-shadow:var(--shadow-sm);transition:var(--ease);
-}
-.news-card:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
-.news-img{width:100%;height:150px;object-fit:cover;background:var(--azul-pale);}
-.news-body{padding:14px;}
-.news-tag{
-  display:inline-block;background:var(--azul-pale);color:var(--azul);
-  border-radius:4px;padding:2px 7px;font-size:.62rem;
-  font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;
-}
-.news-tag.v{background:var(--verde-pale);color:var(--verde);}
-.news-title{
-  font-family:'Syne',sans-serif;font-size:.84rem;
-  font-weight:700;color:var(--negro);margin-bottom:5px;line-height:1.4;
-}
-.news-exc{font-size:.72rem;color:var(--gris-60);line-height:1.6;}
-.news-footer{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-top:10px;padding-top:10px;border-top:1px solid var(--gris-10);
-}
-.news-date{font-size:.65rem;color:var(--gris-60);}
-.news-rd{font-size:.7rem;color:var(--azul);font-weight:600;}
- 
-/* ================================================================
-   FOOTER
-   ================================================================ */
-#ft{
-  background:var(--negro);color:#fff;
-  padding:38px 26px 22px;
-  margin-left:var(--sidebar);
-}
-.ft-grid{
-  display:grid;
-  grid-template-columns:1.6fr 1fr 1fr 1fr;
-  gap:28px;margin-bottom:28px;
-}
-.ft-brand img{
-  height:38px;border-radius:7px;margin-bottom:12px;
-}
-.ft-brand p{
-  font-size:.76rem;color:rgba(255,255,255,.48);
-  line-height:1.75;margin-bottom:14px;
-}
-.social-row{display:flex;gap:8px;}
-.social-ico{
-  width:34px;height:34px;border-radius:7px;
-  background:rgba(255,255,255,.07);
-  display:flex;align-items:center;justify-content:center;
-  transition:var(--ease);overflow:hidden;
-}
-.social-ico:hover{background:var(--azul-light);}
-.social-ico img{width:16px;height:16px;object-fit:contain;filter:brightness(10);}
-.ft-col h4{
-  font-family:'Syne',sans-serif;font-size:.65rem;font-weight:700;
-  letter-spacing:.14em;text-transform:uppercase;
-  color:rgba(255,255,255,.38);margin-bottom:13px;
-}
-.ft-col ul{list-style:none;}
-.ft-col ul li{
-  font-size:.75rem;color:rgba(255,255,255,.55);
-  padding:3px 0;transition:var(--ease);cursor:pointer;
-}
-.ft-col ul li:hover{color:#fff;padding-left:4px;}
-.ft-bottom{
-  border-top:1px solid rgba(255,255,255,.07);
-  padding-top:18px;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:10px;
-}
-.ft-bottom p{font-size:.7rem;color:rgba(255,255,255,.3);}
-.ft-notice{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(232,130,12,.14);
-  border:1px solid rgba(232,130,12,.3);
-  border-radius:6px;padding:4px 11px;
-  font-size:.68rem;color:#E8820C;
-}
- 
-/* ================================================================
-   MODAL
-   ================================================================ */
-.modal-ov{
-  position:fixed;inset:0;
-  background:rgba(12,25,41,.52);
-  backdrop-filter:blur(5px);
-  z-index:2000;
-  display:none;align-items:center;justify-content:center;padding:20px;
-}
-.modal-ov.open{display:flex;}
-.modal{
-  background:#fff;border-radius:var(--r);
-  width:100%;max-width:440px;
-  box-shadow:var(--shadow-lg);overflow:hidden;
-  animation:fadeUp .3s var(--ease);
-}
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-.modal-hd{
-  padding:16px 20px;
-  background:linear-gradient(135deg,var(--azul),var(--azul-med));
-  display:flex;align-items:center;justify-content:space-between;
-}
-.modal-hd h3{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:#fff;}
-.modal-x{
-  background:rgba(255,255,255,.2);color:#fff;
-  border-radius:6px;width:26px;height:26px;
-  font-size:.9rem;display:flex;align-items:center;justify-content:center;
-  transition:var(--ease);
-}
-.modal-x:hover{background:rgba(255,255,255,.35);}
-.modal-bd{padding:20px;display:flex;flex-direction:column;gap:12px;}
-.mf{display:flex;flex-direction:column;gap:4px;}
-.mf label{font-size:.68rem;font-weight:600;color:var(--gris-60);text-transform:uppercase;letter-spacing:.08em;}
-.mf input{
-  border:1px solid var(--gris-20);border-radius:7px;
-  padding:9px 11px;font-size:.8rem;font-family:inherit;
-  outline:none;transition:var(--ease);
-}
-.mf input:focus{border-color:var(--azul-light);box-shadow:0 0 0 3px rgba(59,109,212,.1);}
-.modal-submit{
-  background:var(--azul);color:#fff;border-radius:7px;
-  padding:10px;font-size:.82rem;font-weight:600;
-  transition:var(--ease);margin-top:4px;
-}
-.modal-submit:hover{background:var(--azul-med);}
- 
-/* Toast */
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Space Grotesk', sans-serif; margin:0; letter-spacing:-0.01em;}
+.mono{font-family:'JetBrains Mono', monospace;}
+a{color:inherit;}
+button{font-family:inherit; cursor:pointer;}
+::selection{background:var(--gold-400); color:var(--navy-950);}
+
+/* ---------- utility ---------- */
+.wrap{max-width:1240px; margin:0 auto; padding:0 24px;}
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--gold-400);
+}
+.eyebrow::before{content:''; width:16px; height:1px; background:var(--gold-400);}
+.badge{
+  display:inline-flex; align-items:center; gap:6px; padding:4px 10px;
+  border-radius:100px; font-size:11.5px; font-weight:600; letter-spacing:0.02em;
+  border:1px solid var(--line-dark); background:rgba(219,185,74,0.08); color:var(--gold-300);
+}
+
+/* ---------- top ribbon ---------- */
+.ribbon{
+  width:100%; display:block; height:auto; max-height:130px; object-fit:cover; object-position:center;
+  border-bottom:1px solid var(--line-dark);
+}
+
+/* ---------- header ---------- */
+header.site{
+  position:sticky; top:0; z-index:50;
+  background:rgba(6,13,33,0.86); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line-dark);
+}
+.nav{display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 0;}
+.brand{display:flex; align-items:center; gap:12px; min-width:0;}
+.brand img{width:44px; height:44px; border-radius:10px; object-fit:cover; border:1px solid var(--line-dark); flex-shrink:0;}
+.brand .t1{font-size:15px; font-weight:700; line-height:1.15;}
+.brand .t2{font-size:11.5px; color:var(--gold-300); font-family:'JetBrains Mono',monospace; letter-spacing:0.03em;}
+.navlinks{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
+.navlinks a{
+  font-size:12.5px; font-weight:600; padding:8px 13px; border-radius:9px;
+  border:1px solid transparent; color:rgba(244,242,234,0.75); text-decoration:none;
+  transition:all .15s ease;
+}
+.navlinks a:hover{color:var(--gold-300); border-color:var(--line-dark); background:rgba(219,185,74,0.06);}
+
+/* ---------- hero ---------- */
+.hero{padding:56px 0 40px; border-bottom:1px solid var(--line-dark);}
+.hero-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:48px; align-items:end;}
+.hero h1{font-size:clamp(30px,4.4vw,50px); line-height:1.04; margin:14px 0 16px; font-weight:700;}
+.hero h1 em{font-style:normal; color:var(--gold-400);}
+.hero p.lede{font-size:16px; color:rgba(244,242,234,0.68); max-width:52ch; line-height:1.6;}
+.hero-links{display:flex; gap:14px; flex-wrap:wrap; margin-top:22px;}
+.hlink{
+  display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px;
+  background:rgba(255,255,255,0.03); border:1px solid var(--line-dark); text-decoration:none;
+  font-size:13px; font-weight:600; transition:all .18s ease; flex:1; min-width:180px;
+}
+.hlink:hover{background:rgba(219,185,74,0.09); border-color:var(--gold-500); transform:translateY(-2px);}
+.hlink .dot{width:7px; height:7px; border-radius:50%; background:var(--gold-400); flex-shrink:0;}
+.stat-panel{
+  border:1px solid var(--line-dark); border-radius:var(--radius); padding:22px;
+  background:linear-gradient(180deg, rgba(28,54,128,0.35), rgba(10,22,54,0.6));
+  box-shadow:var(--shadow-lg);
+}
+.stat-panel .row{display:flex; justify-content:space-between; align-items:baseline; padding:10px 0; border-bottom:1px dashed var(--line-dark);}
+.stat-panel .row:last-child{border-bottom:none;}
+.stat-panel .row .num{font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:var(--gold-300);}
+.stat-panel .row .lab{font-size:12px; color:rgba(244,242,234,0.6);}
+
+/* ---------- selector section ---------- */
+section.selector{padding:44px 0 8px;}
+.sel-card{
+  border:1px solid var(--line-dark); border-radius:var(--radius);
+  background:rgba(255,255,255,0.025); padding:26px; display:grid; grid-template-columns:1fr auto; gap:20px; align-items:end;
+}
+.field label{display:block; font-size:11.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold-300); margin-bottom:8px;}
+select, input, textarea{
+  width:100%; background:rgba(5,11,31,0.55); border:1px solid var(--line-dark); color:var(--paper);
+  padding:12px 14px; border-radius:10px; font-size:14px; font-family:inherit; outline:none;
+  transition:border-color .15s ease, background .15s ease;
+}
+select:focus, input:focus, textarea:focus{border-color:var(--gold-500); background:rgba(5,11,31,0.8);}
+select{appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23dbb94a' stroke-width='1.6' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:38px;}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:12px 20px; border-radius:10px; font-weight:700; font-size:13px; border:1px solid transparent;
+  transition:all .15s ease; white-space:nowrap;
+}
+.btn-gold{background:linear-gradient(180deg, var(--gold-400), var(--gold-500)); color:var(--navy-950); box-shadow:0 8px 20px -8px rgba(196,154,34,0.6);}
+.btn-gold:hover{filter:brightness(1.08); transform:translateY(-1px);}
+.btn-ghost{background:transparent; border:1px solid var(--line-dark); color:var(--paper);}
+.btn-ghost:hover{border-color:var(--gold-500); color:var(--gold-300);}
+.btn-danger{background:transparent; border:1px solid rgba(179,69,47,0.5); color:#e0846b; padding:8px 12px; font-size:12px;}
+.btn-danger:hover{background:rgba(179,69,47,0.12); border-color:var(--danger);}
+.btn-sm{padding:8px 14px; font-size:12px;}
+.btn:disabled{opacity:0.4; cursor:not-allowed;}
+
+/* ---------- empty state ---------- */
+.empty-state{padding:80px 24px; text-align:center; color:rgba(244,242,234,0.45);}
+.empty-state .icon{font-size:38px; margin-bottom:14px; opacity:0.6;}
+.empty-state h3{color:rgba(244,242,234,0.75); margin-bottom:8px; font-size:19px;}
+
+/* ---------- municipio header ---------- */
+#municipioApp{display:none;}
+.muni-header{
+  padding:36px 0 0; display:grid; grid-template-columns:110px 1fr auto; gap:22px; align-items:center;
+}
+.muni-flag{width:110px; height:110px; border-radius:14px; object-fit:cover; border:1px solid var(--line-dark); box-shadow:var(--shadow-sm);}
+.muni-flag.placeholder{display:flex; align-items:center; justify-content:center; background:var(--navy-800); font-size:34px; font-weight:700; color:var(--gold-400);}
+.muni-title .eyebrow{margin-bottom:8px;}
+.muni-title h2{font-size:clamp(24px,3vw,34px); font-weight:700;}
+.muni-title .sub{color:rgba(244,242,234,0.55); font-size:13.5px; margin-top:4px;}
+.muni-actions{display:flex; flex-direction:column; gap:10px; align-items:flex-end;}
+.save-indicator{font-size:11.5px; color:rgba(47,122,79,0.9); font-family:'JetBrains Mono',monospace; opacity:0; transition:opacity .3s ease; display:flex; align-items:center; gap:6px;}
+.save-indicator.show{opacity:1;}
+.save-indicator .dotpulse{width:6px; height:6px; border-radius:50%; background:var(--ok);}
+
+/* ---------- tabs ---------- */
+.tabbar{display:flex; gap:6px; margin:28px 0 0; border-bottom:1px solid var(--line-dark); overflow-x:auto;}
+.tabbtn{
+  padding:12px 18px; font-size:13px; font-weight:700; color:rgba(244,242,234,0.55);
+  border-bottom:2px solid transparent; white-space:nowrap; background:none; border-top:none; border-left:none; border-right:none;
+}
+.tabbtn.active{color:var(--gold-300); border-bottom-color:var(--gold-500);}
+.tabpanel{display:none; padding:30px 0 60px; animation:fadein .25s ease;}
+.tabpanel.active{display:block;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+/* ---------- map ---------- */
+.map-card{border:1px solid var(--line-dark); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); margin-bottom:28px;}
+#map{height:380px; width:100%; background:var(--navy-800);}
+.leaflet-control-layers{background:rgba(10,22,54,0.92) !important; color:var(--paper) !important; border:1px solid var(--line-dark) !important; border-radius:10px !important;}
+.leaflet-control-layers-toggle{filter:invert(1) hue-rotate(180deg);}
+.leaflet-bar a{background:var(--navy-800) !important; color:var(--paper) !important; border-color:var(--line-dark) !important;}
+
+/* ---------- panel / card blocks ---------- */
+.panel{border:1px solid var(--line-dark); border-radius:var(--radius); background:rgba(255,255,255,0.02); margin-bottom:22px;}
+.panel-head{padding:20px 24px; border-bottom:1px solid var(--line-dark); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+.panel-head h3{font-size:17px; font-weight:700;}
+.panel-head .num-tag{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--gold-400); background:rgba(219,185,74,0.08); border:1px solid var(--line-dark); padding:3px 9px; border-radius:100px; margin-left:10px;}
+.panel-body{padding:22px 24px;}
+
+.role-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+@media (max-width:720px){.role-grid{grid-template-columns:1fr;}}
+.role-block{border:1px solid var(--line-dark); border-radius:12px; padding:18px; background:rgba(5,11,31,0.3);}
+.role-block .role-label{display:flex; align-items:center; gap:8px; margin-bottom:14px;}
+.role-block .role-label .ico{width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg, var(--gold-400), var(--gold-500)); display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--navy-950); font-size:13px; flex-shrink:0;}
+.role-block .role-label .txt{font-weight:700; font-size:13.5px;}
+.role-block .ffield{margin-bottom:10px;}
+.role-block .ffield:last-child{margin-bottom:0;}
+.role-block .ffield label{font-size:10.5px; margin-bottom:5px;}
+
+/* ---------- secretaria cards ---------- */
+.sec-list{display:flex; flex-direction:column; gap:12px;}
+.sec-card{
+  border:1px solid var(--line-dark); border-radius:12px; padding:16px 18px; background:rgba(5,11,31,0.25);
+  display:grid; grid-template-columns:1.1fr 1fr 0.8fr auto; gap:12px; align-items:end;
+}
+@media (max-width:860px){.sec-card{grid-template-columns:1fr;}}
+.sec-card .ffield label{font-size:10px;}
+.sec-card .del-wrap{display:flex; justify-content:flex-end;}
+.add-sec-row{margin-top:14px;}
+.no-items{color:rgba(244,242,234,0.4); font-size:13px; padding:14px 2px; font-style:italic;}
+
+/* ---------- parroquias ---------- */
+.parroquia-list{display:flex; flex-direction:column; gap:16px;}
+.parroquia-item{border:1px solid var(--line-dark); border-radius:var(--radius); background:rgba(255,255,255,0.02); overflow:hidden;}
+.parroquia-head{
+  padding:16px 22px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; gap:14px; user-select:none;
+}
+.parroquia-head:hover{background:rgba(219,185,74,0.04);}
+.parroquia-head .left{display:flex; align-items:center; gap:12px; min-width:0;}
+.parroquia-head .idx{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--gold-400); background:rgba(219,185,74,0.1); width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.parroquia-head h4{font-size:15px; font-weight:700;}
+.parroquia-head .meta{font-size:11.5px; color:rgba(244,242,234,0.45); margin-top:2px;}
+.chev{transition:transform .2s ease; opacity:0.6; flex-shrink:0;}
+.parroquia-item.open .chev{transform:rotate(180deg);}
+.parroquia-body{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+.parroquia-item.open .parroquia-body{max-height:none;}
+.parroquia-body-inner{padding:6px 22px 24px; border-top:1px solid var(--line-dark);}
+
+.add-parroquia-bar{display:flex; gap:12px; margin-top:18px; flex-wrap:wrap;}
+.add-parroquia-bar input{flex:1; min-width:220px;}
+
+/* ---------- report ---------- */
+.report-cta{
+  border:1px solid var(--line-dark); border-radius:var(--radius); padding:26px;
+  background:linear-gradient(135deg, rgba(28,54,128,0.4), rgba(10,22,54,0.5));
+  display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; margin:32px 0 10px;
+}
+.report-cta h3{font-size:18px; margin-bottom:6px;}
+.report-cta p{font-size:13px; color:rgba(244,242,234,0.6); max-width:44ch;}
+.wa-btn{
+  display:inline-flex; align-items:center; gap:10px; padding:14px 22px; border-radius:12px; font-weight:700; font-size:14px;
+  background:#25D366; color:#06210f; box-shadow:0 10px 24px -10px rgba(37,211,102,0.6); border:none; flex-shrink:0;
+}
+.wa-btn:hover{filter:brightness(1.06); transform:translateY(-1px);}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line-dark); padding:40px 0 30px; margin-top:40px;}
+.foot-grid{display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;}
+.foot-links{display:flex; gap:14px;}
+.foot-links a{width:36px; height:36px; border-radius:9px; border:1px solid var(--line-dark); display:flex; align-items:center; justify-content:center; transition:all .15s ease;}
+.foot-links a:hover{border-color:var(--gold-500); background:rgba(219,185,74,0.08);}
+.foot-links img{width:17px; height:17px; opacity:0.85;}
+.foot-small{font-size:11.5px; color:rgba(244,242,234,0.4); font-family:'JetBrains Mono',monospace;}
+
+/* ---------- toast ---------- */
 .toast{
-  position:fixed;bottom:22px;right:22px;
-  background:var(--verde);color:#fff;
-  border-radius:var(--r-sm);padding:11px 18px;
-  font-size:.78rem;font-weight:600;
-  box-shadow:var(--shadow-lg);z-index:3000;
-  transform:translateY(70px);opacity:0;
-  transition:all .32s var(--ease);
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0;
+  background:var(--navy-800); border:1px solid var(--gold-500); color:var(--paper); padding:13px 22px;
+  border-radius:12px; font-size:13px; font-weight:600; z-index:200; box-shadow:var(--shadow-lg); pointer-events:none;
+  transition:all .25s ease; display:flex; align-items:center; gap:10px;
 }
-.toast.show{transform:translateY(0);opacity:1;}
- 
-/* WhatsApp flotante */
-.wsp-fab{
-  position:fixed;bottom:22px;left:22px;
-  z-index:800;background:var(--verde-light);
-  border-radius:50%;width:50px;height:50px;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 20px rgba(37,184,104,.42);
-  transition:var(--ease);
-}
-.wsp-fab:hover{transform:scale(1.1);}
-.wsp-fab img{width:24px;height:24px;filter:brightness(10);object-fit:contain;}
- 
-/* Detalles */
-.deco-line{
-  height:3px;width:36px;
-  background:linear-gradient(90deg,var(--azul),var(--verde));
-  border-radius:2px;margin-bottom:14px;
-}
-.tab-bar{
-  display:flex;gap:3px;background:var(--gris-10);
-  border:1px solid var(--gris-20);border-radius:10px;
-  padding:4px;width:fit-content;margin-bottom:18px;
-}
-.tab-btn{
-  background:none;padding:7px 16px;border-radius:7px;
-  font-size:.76rem;font-weight:500;color:var(--gris-60);
-  transition:var(--ease);
-}
-.tab-btn.on{background:#fff;color:var(--azul);box-shadow:var(--shadow-sm);font-weight:700;}
- 
-/* Responsive */
-@media(max-width:900px){
-  :root{--sidebar:0px;}
-  #sb{
-    position:fixed;left:0;top:var(--hh);
-    width:280px;z-index:900;
-    transform:translateX(-100%);
-  }
-  #sb.open{transform:translateX(0);}
-  #mb-toggle{display:flex;}
-  #ft{margin-left:0;}
-  .stats-row{grid-template-columns:1fr 1fr;}
-  .ft-grid{grid-template-columns:1fr 1fr;}
-}
-@media(max-width:580px){
-  #main{padding:16px 13px 30px;}
-  .stats-row{grid-template-columns:1fr;}
-  .ft-grid{grid-template-columns:1fr;}
-  .hdr-banner-txt{display:none;}
-  #hdr nav .nb:not(.cta){display:none;}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+@media (max-width:820px){
+  .hero-grid{grid-template-columns:1fr;}
+  .muni-header{grid-template-columns:70px 1fr; grid-template-areas:"flag title" "actions actions";}
+  .muni-flag{width:70px; height:70px;}
+  .muni-actions{align-items:flex-start; grid-area:actions; flex-direction:row; margin-top:14px;}
+  .sel-card{grid-template-columns:1fr;}
 }
 </style>
 </head>
 <body>
- 
-<!-- ================================================================
-     HEADER
-     ================================================================ -->
-<header id="hdr">
-  <button id="mb-toggle" aria-label="Menú" onclick="toggleSb()">
-    <span></span><span></span><span></span>
-  </button>
- 
-  <div class="hdr-logo">
-    <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/logo%20concertacion.jpg?raw=true"
-         alt="Concertación" onerror="this.style.display='none'"/>
-    <div class="hdr-logo-txt">CONCERTACIÓN<br><span>CARABOBO</span></div>
+
+<img class="ribbon" src="https://github.com/jhonmalorne/CoordinacionMunicipal/blob/main/Imagen%20superior.jpg?raw=true" alt="Concertación Carabobo">
+
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <img src="https://github.com/jhonmalorne/CoordinacionMunicipal/blob/main/logo%20concertacion.jpg?raw=true" alt="Logo Concertación">
+      <div>
+        <div class="t1">Coordinación Municipal</div>
+        <div class="t2">CONCERTACIÓN · CARABOBO</div>
+      </div>
+    </div>
+    <nav class="navlinks">
+      <a href="https://concertacionciudadana.com/" target="_blank" rel="noopener">Página principal</a>
+      <a href="https://jhonmalorne.github.io/PadronConcertacion/" target="_blank" rel="noopener">Padrón electoral</a>
+      <a href="https://jhonmalorne.github.io/ConcertacionCODERE/" target="_blank" rel="noopener">CODERE deportivo</a>
+      <a href="https://forms.gle/EX8vPqNH4j3Tsvnk7" target="_blank" rel="noopener">Registro de líderes</a>
+    </nav>
   </div>
- 
-  <div class="hdr-banner">
-    <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Imagen%20superior.jpg?raw=true"
-         alt="Banner" onerror="this.style.display='none'"/>
-    <div class="hdr-banner-txt">PORTAL ESTRATÉGICO REGIONAL · CARABOBO · VENEZUELA</div>
-  </div>
- 
-  <nav>
-    <button class="nb on" onclick="show('inicio')">Inicio</button>
-    <button class="nb" onclick="show('nosotros')">Nosotros</button>
-    <button class="nb" onclick="show('estatutos')">Estatutos</button>
-    <button class="nb" onclick="show('noticias')">Noticias</button>
-    <a class="nb cta" href="https://concertacion-ciudadana.online/registro" target="_blank">Registrarse</a>
-  </nav>
 </header>
- 
-<!-- ================================================================
-     LAYOUT
-     ================================================================ -->
-<div id="layout">
- 
-  <!-- ============ SIDEBAR ============ -->
-  <aside id="sb">
- 
-    <div style="margin-bottom:18px;">
-      <div class="sb-lbl">Región</div>
-      <div class="sb-region">
-        <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/bandera%20de%20carabobo.png?raw=true"
-             alt="Carabobo" onerror="this.style.display='none'"/>
-        <div class="sb-region-txt">
-          <div class="nm">Estado Carabobo</div>
-          <div class="st">Coordinación Regional</div>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Gestión de estructuras territoriales</span>
+        <h1>Arma tu equipo, <em>municipio a municipio,</em><br>parroquia a parroquia.</h1>
+        <p class="lede">Selecciona tu municipio del estado Carabobo, construye tu equipo municipal y el de cada parroquia con nombre, cargo y teléfono de contacto — y envía el reporte consolidado por WhatsApp en un toque.</p>
+        <div class="hero-links">
+          <a class="hlink" href="https://concertacionciudadana.com/" target="_blank" rel="noopener"><span class="dot"></span>Página inicial Concertación</a>
+          <a class="hlink" href="https://jhonmalorne.github.io/PadronConcertacion/" target="_blank" rel="noopener"><span class="dot"></span>Tu padrón electoral</a>
+          <a class="hlink" href="https://jhonmalorne.github.io/ConcertacionCODERE/" target="_blank" rel="noopener"><span class="dot"></span>Registra tu club deportivo (CODERE)</a>
         </div>
+      </div>
+      <div class="stat-panel">
+        <div class="row"><span class="lab">Municipios cubiertos</span><span class="num">14</span></div>
+        <div class="row"><span class="lab">Parroquias registradas</span><span class="num">38</span></div>
+        <div class="row"><span class="lab">Estado</span><span class="num mono" style="font-size:14px;">Carabobo</span></div>
+        <div class="row"><span class="lab">Guardado</span><span class="num mono" style="font-size:14px;">Automático · local</span></div>
       </div>
     </div>
- 
-    <div class="sb-lbl">Municipios (14)</div>
-    <div id="mun-list"></div>
- 
-  </aside>
- 
-  <!-- ============ MAIN ============ -->
-  <main id="main">
- 
-    <!-- ===== INICIO ===== -->
-    <section id="sec-inicio" class="section active">
-      <div class="ph">
-        <div class="ph-bc">Portal Regional · <span>Panel de Control</span></div>
-        <h1>Carabobo Estratégico</h1>
-        <p>Coordinación política y territorial — 14 municipios · Estado Carabobo</p>
-      </div>
- 
-      <div class="stats-row">
-        <div class="stat">
-          <div class="stat-n">14</div>
-          <div class="stat-l">Municipios Organizados</div>
+  </section>
+
+  <section class="selector">
+    <div class="wrap">
+      <div class="sel-card">
+        <div class="field">
+          <label for="municipioSelect">Selecciona tu municipio</label>
+          <select id="municipioSelect">
+            <option value="">— Elige un municipio de Carabobo —</option>
+          </select>
         </div>
-        <div class="stat g">
-          <div class="stat-n">1.663.942</div>
-          <div class="stat-l">Total de Electores</div>
-        </div>
-        <div class="stat a">
-          <div class="stat-n">466</div>
-          <div class="stat-l">Centros de Votación</div>
-        </div>
-      </div>
- 
-      <div class="reg-banner">
-        <div>
-          <h3>¡Únete a Concertación Carabobo!</h3>
-          <p>Regístrate como activista y lidera el cambio en tu municipio.</p>
-        </div>
-        <a href="https://concertacion-ciudadana.online/registro" target="_blank">Registrarme ahora →</a>
-      </div>
- 
-      <div class="-card">
-        <div class="-head">
-          <div class="pulse-dot"></div>
-          <h2>a Estratégico Regional — Carabobo</h2>
-        </div>
-        <iframe src="https://jhonmalorne.github.io/concertacionCaraboboMapaElectoral/"
-                title="Mapa Estratégico" loading="lazy"></iframe>
-      </div>
- 
-      <div class="card">
-        <div class="card-hd"><h3>Liderazgo Nacional</h3></div>
-        <div style="position:relative;overflow:hidden;max-height:280px;">
-          <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/cesar%20perez%20vivas%20y%20maria%20corina%20machado.jpg?raw=true"
-               alt="Líderes" style="width:100%;object-fit:cover;"
-               onerror="this.style.display='none'"/>
-          <div style="position:absolute;bottom:0;left:0;right:0;
-            background:linear-gradient(transparent,rgba(12,25,41,.85));
-            padding:18px 22px;">
-            <p style="color:#fff;font-family:'Syne',sans-serif;font-size:.92rem;font-weight:700;">
-              César Pérez Vivas · María Corina Machado
-            </p>
-            <p style="color:rgba(255,255,255,.7);font-size:.73rem;">
-              Liderazgo democrático — Concertación Ciudadana Venezuela
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
- 
-    <!-- ===== NOSOTROS ===== -->
-    <section id="sec-nosotros" class="section">
-      <div class="ph">
-        <div class="ph-bc">Portal Regional · <span>Nosotros</span></div>
-        <h1>Estructura Organizativa</h1>
-        <p>Comité Directivo Regional — Carabobo</p>
-      </div>
- 
-      <div class="org-wrap">
-        <div class="deco-line"></div>
- 
-        <div style="margin-bottom:24px;">
-          <div class="org-lbl">Comité Directivo Regional (CDR) — Carabobo</div>
-          <p style="font-size:.76rem;color:var(--gris-60);margin-bottom:18px;max-width:580px;">
-            Órgano de dirección política regional. Responsable de la coordinación estratégica,
-            formación y activación electoral en los 14 municipios de Carabobo.
-          </p>
-          <div class="org-top">
-            <div class="org-node top">
-              <div class="cargo">Coordinador Regional</div>
-              <div class="nombre" id="cdr-coord-n">Ely Montañez</div>
-              <button class="edit-btn" onclick="editNode('cdr-coord','Coordinador Regional')">Editar</button>
-            </div>
-            <div class="org-node top">
-              <div class="cargo">Secretario General Regional</div>
-              <div class="nombre" id="cdr-sg-n">José Roca</div>
-              <button class="edit-btn" onclick="editNode('cdr-sg','Secretario General Regional')">Editar</button>
-            </div>
-          </div>
-        </div>
- 
-        <div>
-          <div class="org-lbl">Secretarías Regionales</div>
-          <div class="secs-grid" id="cdr-secs"></div>
-          <button class="mun-save" style="max-width:220px;margin-top:12px;font-size:.74rem;padding:8px 16px;"
-            onclick="openModal('sec')">+ Agregar Secretaría</button>
-        </div>
-      </div>
-    </section>
- 
-    <!-- ===== ESTATUTOS ===== -->
-    <section id="sec-estatutos" class="section">
-      <div class="ph">
-        <div class="ph-bc">Portal Regional · <span>Estatutos</span></div>
-        <h1>Información Institucional</h1>
-        <p>Concertación Ciudadana — Documentos y estatutos</p>
-      </div>
-      <div class="info-box">
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
-          <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/logo%20concertacion.jpg?raw=true"
-               style="height:48px;border-radius:8px;" onerror="this.style.display='none'" alt="Logo"/>
-          <div>
-            <h2>Concertación Ciudadana</h2>
-            <p style="font-size:.72rem;opacity:.65;margin:2px 0 0;">Movimiento político democrático · Venezuela</p>
-          </div>
-        </div>
-        <p>Concertación Ciudadana es un movimiento político democrático comprometido con la libertad,
-           la participación ciudadana y el cambio pacífico en Venezuela. Con presencia en todos los estados
-           del país, trabaja por la organización territorial, la formación política y la activación
-           electoral de sus militantes.</p>
-      </div>
-      <div class="docs-grid">
-        <div class="doc-card" onclick="window.open('https://concertacion-ciudadana.online/registro','_blank')">
-          <div class="doc-icon">📋</div>
-          <div class="doc-name">Registro de Militantes</div>
-          <div class="doc-desc">Formulario oficial de inscripción</div>
-        </div>
-        <div class="doc-card" onclick="window.open('https://forms.gle/2U99B8EssGEruMXE9','_blank')">
-          <div class="doc-icon">📝</div>
-          <div class="doc-name">Formulario Interno</div>
-          <div class="doc-desc">Google Forms — coordinadores</div>
-        </div>
-        <div class="doc-card">
-          <div class="doc-icon">📖</div>
-          <div class="doc-name">Estatutos Orgánicos</div>
-          <div class="doc-desc">Documento por cargar</div>
-        </div>
-        <div class="doc-card" onclick="window.open('https://jhonmalorne.github.io/concertacionCaraboboMapaElectoral/','_blank')">
-          <div class="doc-icon">🗺️</div>
-          <div class="doc-name">Mapa Estratégico</div>
-          <div class="doc-desc">Ver mapa interactivo regional</div>
-        </div>
-        <div class="doc-card">
-          <div class="doc-icon">📊</div>
-          <div class="doc-name">Plan Electoral Regional</div>
-          <div class="doc-desc">Documento por cargar</div>
-        </div>
-        <div class="doc-card">
-          <div class="doc-icon">🏛️</div>
-          <div class="doc-name">Estructura Territorial</div>
-          <div class="doc-desc">Mapa de coordinaciones</div>
-        </div>
-      </div>
-    </section>
- 
-    <!-- ===== NOTICIAS ===== -->
-    <section id="sec-noticias" class="section">
-      <div class="ph">
-        <div class="ph-bc">Portal Regional · <span>Noticias</span></div>
-        <h1>Actualidad Política</h1>
-        <p>Información para coordinadores municipales — Carabobo</p>
-      </div>
-      <div class="news-grid">
-        <div class="news-card">
-          <img class="news-img"
-               src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/cesar%20perez%20vivas%20y%20maria%20corina%20machado.jpg?raw=true"
-               onerror="this.style.background='var(--azul-pale)'" alt="Noticia"/>
-          <div class="news-body">
-            <span class="news-tag">Nacional</span>
-            <div class="news-title">Concertación avanza en la organización territorial de Carabobo</div>
-            <div class="news-exc">El movimiento consolida su presencia en los 14 municipios del estado con nuevos coordinadores regionales.</div>
-            <div class="news-footer"><span class="news-date">Mayo 2025</span><span class="news-rd">Leer →</span></div>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-img" style="background:var(--azul-pale);display:flex;align-items:center;justify-content:center;">
-            <span style="font-size:3rem;">🗳️</span>
-          </div>
-          <div class="news-body">
-            <span class="news-tag v">Electoral</span>
-            <div class="news-title">Coordinación de los 466 centros de votación en Carabobo</div>
-            <div class="news-exc">Se activa el plan de cobertura electoral para garantizar presencia en cada mesa del estado.</div>
-            <div class="news-footer"><span class="news-date">Abril 2025</span><span class="news-rd">Leer →</span></div>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-img" style="background:var(--verde-pale);display:flex;align-items:center;justify-content:center;">
-            <span style="font-size:3rem;">📢</span>
-          </div>
-          <div class="news-body">
-            <span class="news-tag">Activismo</span>
-            <div class="news-title">Formación política para líderes comunitarios en Carabobo</div>
-            <div class="news-exc">Jornadas de capacitación para coordinadores municipales y sectoriales en todos los municipios del estado.</div>
-            <div class="news-footer"><span class="news-date">Marzo 2025</span><span class="news-rd">Leer →</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
- 
-  </main>
-</div>
- 
-<!-- ================================================================
-     FOOTER
-     ================================================================ -->
-<footer id="ft">
-  <div class="ft-grid">
-    <div class="ft-brand">
-      <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/logo%20concertacion.jpg?raw=true"
-           alt="Concertación" onerror="this.style.display='none'"/>
-      <p>Portal Estratégico Regional de Concertación Carabobo. Coordinación política y territorial
-         en los 14 municipios del estado Carabobo, Venezuela.</p>
-      <div class="social-row">
-        <a class="social-ico" href="https://whatsapp.com/channel/0029VbCN9F9Bqbr6yvRiYF3L" target="_blank">
-          <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/iconodewhatsapp.png?raw=true" alt="WhatsApp"/>
-        </a>
-        <a class="social-ico" href="https://www.instagram.com/concertacionlosguayos/" target="_blank">
-          <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/iconoinstagram.png?raw=true" alt="Instagram"/>
-        </a>
-        <a class="social-ico" href="https://www.facebook.com/ConcertacionCiudadanaCarabobo" target="_blank">
-          <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/iconofacebook.png?raw=true" alt="Facebook"/>
-        </a>
-        <a class="social-ico" href="https://www.threads.com/@concertacioncarabobo?hl=es" target="_blank">
-          <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/iconotreads.png?raw=true" alt="Threads"/>
-        </a>
+        <button class="btn btn-gold" id="loadBtn">Cargar equipo →</button>
       </div>
     </div>
-    <div class="ft-col">
-      <h4>Portal</h4>
-      <ul>
-        <li onclick="show('inicio')">Panel de Inicio</li>
-        <li onclick="show('nosotros')">Estructura CDR</li>
-        <li onclick="show('estatutos')">Estatutos</li>
-        <li onclick="show('noticias')">Noticias</li>
-      </ul>
-    </div>
-    <div class="ft-col">
-      <h4>Participación</h4>
-      <ul>
-        <li><a href="https://concertacion-ciudadana.online/registro" target="_blank">Registrarse</a></li>
-        <li><a href="https://forms.gle/2U99B8EssGEruMXE9" target="_blank">Formulario Interno</a></li>
-        <li><a href="https://whatsapp.com/channel/0029VbCN9F9Bqbr6yvRiYF3L" target="_blank">Canal WhatsApp</a></li>
-      </ul>
-    </div>
-    <div class="ft-col">
-      <h4>Territorio</h4>
-      <ul>
-        <li>14 Municipios</li>
-        <li>466 Centros de Votación</li>
-        <li>1.663.942 Electores</li>
-        <li>Estado Carabobo</li>
-        <li>Venezuela</li>
-      </ul>
+  </section>
+
+  <div class="wrap" id="emptyState">
+    <div class="empty-state">
+      <div class="icon">🗺️</div>
+      <h3>Ningún municipio seleccionado</h3>
+      <p>Elige tu municipio arriba para cargar el mapa, las parroquias y tu equipo de trabajo.</p>
     </div>
   </div>
-  <div class="ft-bottom">
-    <p>© 2025 Concertación Carabobo — Portal Estratégico Regional</p>
-    <div class="ft-notice">⚠️ No se tiene ningún padrón electoral</div>
+
+  <div class="wrap" id="municipioApp">
+    <div class="muni-header">
+      <img id="muniFlag" class="muni-flag" src="" alt="">
+      <div class="muni-title">
+        <span class="eyebrow" id="muniEyebrow">Municipio</span>
+        <h2 id="muniName">—</h2>
+        <div class="sub" id="muniSub">—</div>
+      </div>
+      <div class="muni-actions">
+        <div class="save-indicator" id="saveIndicator"><span class="dotpulse"></span><span>Cambios guardados</span></div>
+        <button class="btn btn-ghost btn-sm" id="changeMuni">Cambiar municipio</button>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <button class="tabbtn active" data-tab="mapa">Mapa</button>
+      <button class="tabbtn" data-tab="equipo">Equipo municipal</button>
+      <button class="tabbtn" data-tab="parroquias">Parroquias</button>
+      <button class="tabbtn" data-tab="reporte">Reporte</button>
+    </div>
+
+    <div class="tabpanel active" id="tab-mapa">
+      <div class="map-card"><div id="map"></div></div>
+    </div>
+
+    <div class="tabpanel" id="tab-equipo">
+      <div class="panel">
+        <div class="panel-head"><h3>Equipo municipal</h3></div>
+        <div class="panel-body">
+          <div class="role-grid">
+            <div class="role-block">
+              <div class="role-label"><div class="ico">CM</div><div class="txt">Coordinador Municipal</div></div>
+              <div class="ffield"><label>Nombre y apellido</label><input type="text" data-role="coordinador" data-field="nombre" placeholder="Nombre completo"></div>
+              <div class="ffield"><label>Teléfono</label><input type="tel" data-role="coordinador" data-field="telefono" placeholder="04XX-XXXXXXX"></div>
+            </div>
+            <div class="role-block">
+              <div class="role-label"><div class="ico">SG</div><div class="txt">Secretario General Municipal</div></div>
+              <div class="ffield"><label>Nombre y apellido</label><input type="text" data-role="secgeneral" data-field="nombre" placeholder="Nombre completo"></div>
+              <div class="ffield"><label>Teléfono</label><input type="tel" data-role="secgeneral" data-field="telefono" placeholder="04XX-XXXXXXX"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Secretarías municipales <span class="num-tag" id="secMuniCount">0</span></h3>
+          <button class="btn btn-ghost btn-sm" id="addSecMuni">+ Agregar secretaría</button>
+        </div>
+        <div class="panel-body">
+          <div class="sec-list" id="secMuniList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabpanel" id="tab-parroquias">
+      <div class="panel">
+        <div class="panel-head"><h3>Parroquias <span class="num-tag" id="parroquiaCount">0</span></h3></div>
+        <div class="panel-body">
+          <div class="parroquia-list" id="parroquiaList"></div>
+          <div class="add-parroquia-bar">
+            <input type="text" id="newParroquiaInput" placeholder="Nombre de nueva parroquia">
+            <button class="btn btn-ghost" id="addParroquiaBtn">+ Agregar parroquia</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabpanel" id="tab-reporte">
+      <div class="panel">
+        <div class="panel-head"><h3>Vista previa del reporte</h3></div>
+        <div class="panel-body">
+          <pre id="reportPreview" class="mono" style="white-space:pre-wrap; font-size:12.5px; line-height:1.7; color:rgba(244,242,234,0.85); background:rgba(5,11,31,0.4); border:1px solid var(--line-dark); border-radius:12px; padding:18px; max-height:420px; overflow:auto;"></pre>
+        </div>
+      </div>
+      <div class="report-cta">
+        <div>
+          <h3>Enviar reporte por WhatsApp</h3>
+          <p>Se enviará el equipo municipal completo y todas las parroquias registradas a la coordinación general.</p>
+        </div>
+        <button class="wa-btn" id="sendReportBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.71.45 3.38 1.29 4.85L2 22l5.36-1.4a9.9 9.9 0 0 0 4.68 1.19h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.13c-.24.68-1.4 1.32-1.93 1.4-.5.08-1.12.11-1.8-.11-.42-.13-.95-.31-1.63-.6-2.87-1.24-4.75-4.14-4.9-4.34-.14-.2-1.17-1.56-1.17-2.97 0-1.41.74-2.1 1-2.39.26-.29.57-.36.76-.36.19 0 .38 0 .55.01.18.01.41-.07.64.49.24.58.81 2 .88 2.14.07.14.12.31.02.5-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.02 1.12.99 2.06 1.3 2.35 1.45.29.15.46.13.63-.08.17-.2.72-.84.92-1.13.19-.29.38-.24.64-.14.26.1 1.66.78 1.94.92.29.15.48.22.55.34.07.13.07.71-.17 1.39z"/></svg>
+          Enviar reporte
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div class="foot-small">CONCERTACIÓN CARABOBO — Coordinación Municipal · Herramienta interna de gestión de equipos</div>
+    <div class="foot-links">
+      <a href="https://concertacionciudadana.com/" target="_blank" rel="noopener" title="Sitio web"><img src="https://github.com/jhonmalorne/CoordinacionMunicipal/blob/main/iconomaps.png?raw=true" alt="Sitio"></a>
+      <a href="https://concertacionciudadana.com/" target="_blank" rel="noopener" title="Instagram"><img src="https://github.com/jhonmalorne/CoordinacionMunicipal/blob/main/iconoinstagram.png?raw=true" alt="Instagram"></a>
+      <a href="https://concertacionciudadana.com/" target="_blank" rel="noopener" title="Facebook"><img src="https://github.com/jhonmalorne/CoordinacionMunicipal/blob/main/iconofacebook.png?raw=true" alt="Facebook"></a>
+      <a href="https://wa.me/584244525765" target="_blank" rel="noopener" title="WhatsApp"><img src="https://github.com/jhonmalorne/CoordinacionMunicipal/blob/main/iconodewhatsapp.png?raw=true" alt="WhatsApp"></a>
+      <a href="https://concertacionciudadana.com/" target="_blank" rel="noopener" title="Threads"><img src="https://github.com/jhonmalorne/CoordinacionMunicipal/blob/main/iconotreads.png?raw=true" alt="Threads"></a>
+    </div>
   </div>
 </footer>
- 
-<!-- WhatsApp flotante -->
-<a class="wsp-fab" href="https://whatsapp.com/channel/0029VbCN9F9Bqbr6yvRiYF3L" target="_blank">
-  <img src="https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/iconodewhatsapp.png?raw=true" alt="WhatsApp"/>
-</a>
- 
-<!-- ================================================================
-     MODAL
-     ================================================================ -->
-<div class="modal-ov" id="modal" onclick="closeModalOut(event)">
-  <div class="modal">
-    <div class="modal-hd">
-      <h3 id="m-title">Agregar</h3>
-      <button class="modal-x" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-bd" id="m-body"></div>
-  </div>
-</div>
- 
-<!-- Toast -->
-<div class="toast" id="toast">✓ Guardado</div>
- 
-<!-- ================================================================
-     JAVASCRIPT
-     ================================================================ -->
+
+<div class="toast" id="toast"></div>
+
 <script>
-/* ================================================================
-   DATOS BASE MUNICIPIOS
-   ================================================================ */
-const MUNS_DEF = [
-  {id:'valencia',   nombre:'Valencia',       capital:'Valencia',       flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Valencia.jpg?raw=true',        coord:'',sg:'',tel:''},
-  {id:'diegoi',     nombre:'Diego Ibarra',   capital:'Mariara',        flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Diego%20Ibarra.jpg?raw=true',  coord:'',sg:'',tel:''},
-  {id:'carlosa',    nombre:'Carlos Arvelo',  capital:'Güigüe',         flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/carlos%20arvelo.jpg?raw=true', coord:'',sg:'',tel:''},
-  {id:'guacara',    nombre:'Guacara',        capital:'Guacara',        flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Guacara.jpg?raw=true',         coord:'',sg:'',tel:''},
-  {id:'juanjm',     nombre:'Juan José Mora', capital:'Morón',          flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Juan%20Jose%20Mora.jpg?raw=true',coord:'',sg:'',tel:''},
-  {id:'libertador', nombre:'Libertador',     capital:'Tocuyito',       flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Libertador.jpg?raw=true',      coord:'',sg:'',tel:''},
-  {id:'losguayos',  nombre:'Los Guayos',     capital:'Los Guayos',     flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Bandera_Los_Guayos_Carabobo.png?raw=true', coord:'Jhon Álvarez',sg:'Augusto Salazar',tel:''},
-  {id:'miranda',    nombre:'Miranda',        capital:'Miranda',        flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Miranda.jpg?raw=true',         coord:'',sg:'',tel:''},
-  {id:'montalban',  nombre:'Montalbán',      capital:'Montalbán',      flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Montalban.jpg?raw=true',       coord:'',sg:'',tel:''},
-  {id:'naguanagua', nombre:'Naguanagua',     capital:'Naguanagua',     flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Naguanagua.jpg?raw=true',      coord:'',sg:'',tel:''},
-  {id:'pcabello',   nombre:'Puerto Cabello', capital:'Puerto Cabello', flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Puerto%20Cabello.jpg?raw=true',coord:'',sg:'',tel:''},
-  {id:'sandiego',   nombre:'San Diego',      capital:'San Diego',      flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/San%20diego.jpg?raw=true',     coord:'',sg:'',tel:''},
-  {id:'sanjoaquin', nombre:'San Joaquín',    capital:'San Joaquín',    flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/San%20Joaquin.jpg?raw=true',   coord:'',sg:'',tel:''},
-  {id:'bejuma',     nombre:'Bejuma',         capital:'Bejuma',         flag:'https://github.com/jhonmalorne/CoordinacionLosGuayos/blob/main/Bejuma.jpg?raw=true',          coord:'',sg:'',tel:''},
-];
- 
-const SECS_DEF = [
-  {cargo:'Secretario de Organización',    nombre:'Daniela Torrealba',   tel:'0424-4517644', props:[]},
-  {cargo:'Secretario de Comunicación',   nombre:'Jhon Álvarez',        tel:'0424-4525765', props:[]},
-  {cargo:'Secretario de Formación',      nombre:'Ely Montañez Junior', tel:'0414-4383601', props:[]},
-  {cargo:'Secretario de Acción Política',nombre:'Baldwyn Mujica',      tel:'0414-4160654', props:[]},
-  {cargo:'Secretario de Salud',          nombre:'Abraham Jiménez',     tel:'0416-6471111', props:[]},
-];
- 
-/* ================================================================
-   ESTADO
-   ================================================================ */
-const S = {
-  muns:    JSON.parse(localStorage.getItem('muns')||'null')    || JSON.parse(JSON.stringify(MUNS_DEF)),
-  secs:    JSON.parse(localStorage.getItem('secs')||'null')    || JSON.parse(JSON.stringify(SECS_DEF)),
-  coord:   localStorage.getItem('cdr_coord') || 'Ely Montañez',
-  sg:      localStorage.getItem('cdr_sg')    || 'José Roca',
-  mCtx:    null,
+/* ============================================================
+   DATA: Municipios y parroquias de Carabobo
+   ============================================================ */
+const FLAG_BASE = "https://github.com/jhonmalorne/CoordinacionMunicipal/blob/main/";
+const MUNICIPIOS = {
+  valencia: { name:"Valencia", capitalNote:"Capital del estado Carabobo", flag: FLAG_BASE+"Valencia.jpg?raw=true", coords:[10.1620,-68.0077], zoom:12,
+    parroquias:["Candelaria","Catedral","El Socorro","Miguel Peña","Rafael Urdaneta","San Blas","San José","Santa Rosa","Ocumare (Delegación Norte)"]},
+  bejuma: { name:"Bejuma", capitalNote:"", flag: FLAG_BASE+"Bejuma.jpg?raw=true", coords:[10.1660,-68.2680], zoom:12,
+    parroquias:["Bejuma","Canoabo","Simón Bolívar"]},
+  carlos_arvelo: { name:"Carlos Arvelo", capitalNote:"", flag: FLAG_BASE+"carlos%20arvelo.jpg?raw=true", coords:[10.0870,-67.7800], zoom:12,
+    parroquias:["Güigüe","Belén","Tacarigua"]},
+  diego_ibarra: { name:"Diego Ibarra", capitalNote:"", flag: FLAG_BASE+"Diego%20Ibarra.jpg?raw=true", coords:[10.2440,-67.8720], zoom:12,
+    parroquias:["Mariara","Aguas Calientes"]},
+  guacara: { name:"Guacara", capitalNote:"", flag: FLAG_BASE+"Guacara.jpg?raw=true", coords:[10.2280,-67.8850], zoom:12,
+    parroquias:["Guacara","Ciudad Alianza","Yagua"]},
+  juan_jose_mora: { name:"Juan José Mora", capitalNote:"", flag: FLAG_BASE+"Juan%20Jose%20Mora.jpg?raw=true", coords:[10.4670,-68.1930], zoom:12,
+    parroquias:["Morón","Urama"]},
+  libertador: { name:"Libertador", capitalNote:"", flag: FLAG_BASE+"Libertador.jpg?raw=true", coords:[10.1000,-68.0930], zoom:12,
+    parroquias:["Tocuyito","Independencia"]},
+  los_guayos: { name:"Los Guayos", capitalNote:"", flag: FLAG_BASE+"Bandera_Los_Guayos_Carabobo.png?raw=true", coords:[10.1990,-67.9040], zoom:13,
+    parroquias:["Los Guayos"]},
+  miranda: { name:"Miranda", capitalNote:"", flag: FLAG_BASE+"Miranda.jpg?raw=true", coords:[10.0500,-67.8300], zoom:13,
+    parroquias:["Miranda"]},
+  montalban: { name:"Montalbán", capitalNote:"", flag: FLAG_BASE+"Montalban.jpg?raw=true", coords:[10.2270,-68.3110], zoom:13,
+    parroquias:["Montalbán"]},
+  naguanagua: { name:"Naguanagua", capitalNote:"", flag: FLAG_BASE+"Naguanagua.jpg?raw=true", coords:[10.2350,-67.9930], zoom:13,
+    parroquias:["Naguanagua"]},
+  puerto_cabello: { name:"Puerto Cabello", capitalNote:"", flag: FLAG_BASE+"Puerto%20Cabello.jpg?raw=true", coords:[10.4750,-68.0090], zoom:12,
+    parroquias:["Bartolomé Salom","Goaigoaza","Juan José Flores","Fraternidad","Borburata","Patanemo"]},
+  san_diego: { name:"San Diego", capitalNote:"", flag: FLAG_BASE+"San%20diego.jpg?raw=true", coords:[10.2270,-67.9600], zoom:13,
+    parroquias:["San Diego"]},
+  san_joaquin: { name:"San Joaquín", capitalNote:"", flag: FLAG_BASE+"San%20Joaquin.jpg?raw=true", coords:[10.2600,-67.8580], zoom:13,
+    parroquias:["San Joaquín"]},
 };
- 
-function persist(){
-  localStorage.setItem('muns',  JSON.stringify(S.muns));
-  localStorage.setItem('secs',  JSON.stringify(S.secs));
-  localStorage.setItem('cdr_coord', S.coord);
-  localStorage.setItem('cdr_sg',    S.sg);
+const REPORT_PHONE = "584244525765"; // Jhon Alvarez
+
+/* ============================================================
+   STATE / STORAGE
+   ============================================================ */
+const STORAGE_PREFIX = "concertacion_equipo_";
+let currentMuniId = null;
+let currentData = null;
+let map = null, mapLayers = {};
+let openParroquia = null;
+let saveTimer = null;
+
+function blankPersona(){ return { nombre:"", telefono:"" }; }
+function blankSecretaria(area=""){ return { id:cryptoId(), area, nombre:"", telefono:"" }; }
+function cryptoId(){ return 'x' + Math.random().toString(36).slice(2,10); }
+
+function defaultData(muniId){
+  const m = MUNICIPIOS[muniId];
+  return {
+    equipoMunicipal:{
+      coordinador: blankPersona(),
+      secgeneral: blankPersona(),
+      secretarias: []
+    },
+    parroquias: m.parroquias.map(p => ({
+      id: cryptoId(),
+      nombre: p,
+      coordinador: blankPersona(),
+      secgeneral: blankPersona(),
+      secretarias: []
+    })),
+    customParroquias: []
+  };
 }
- 
-/* ================================================================
-   NAVEGACIÓN
-   ================================================================ */
-function show(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('sec-'+id).classList.add('active');
-  document.querySelectorAll('#hdr .nb:not(.cta)').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('#hdr .nb').forEach(b=>{
-    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(id)) b.classList.add('on');
-  });
-  document.getElementById('sb').classList.remove('open');
-  window.scrollTo({top:0,behavior:'smooth'});
+
+function loadData(muniId){
+  const raw = localStorage.getItem(STORAGE_PREFIX + muniId);
+  if(!raw) return defaultData(muniId);
+  try{
+    const parsed = JSON.parse(raw);
+    // ensure structure integrity (in case parroquia list changed)
+    if(!parsed.equipoMunicipal) parsed.equipoMunicipal = { coordinador:blankPersona(), secgeneral:blankPersona(), secretarias:[] };
+    if(!Array.isArray(parsed.parroquias)) parsed.parroquias = defaultData(muniId).parroquias;
+    if(!Array.isArray(parsed.customParroquias)) parsed.customParroquias = [];
+    return parsed;
+  }catch(e){ return defaultData(muniId); }
 }
-function toggleSb(){document.getElementById('sb').classList.toggle('open');}
- 
-/* ================================================================
-   SIDEBAR — MUNICIPIOS
-   ================================================================ */
-function renderMuns(){
-  const el = document.getElementById('mun-list');
-  el.innerHTML = S.muns.map((m,i)=>{
-    const hasCoord = !!m.coord.trim();
-    return `
-    <div class="mun-card" id="mc-${i}">
-      <div class="mun-header" onclick="toggleMun(${i})">
-        <img class="mun-flag" src="${m.flag}" alt="${m.nombre}"
-             onerror="this.outerHTML='<div class=mun-flag-placeholder></div>'"/>
-        <div class="mun-info">
-          <div class="mun-name">${m.nombre}</div>
-          <div class="mun-coord-name" style="color:${hasCoord?'var(--verde)':'var(--rojo)'}">
-            ${hasCoord ? m.coord : 'Sin coordinador'}
-          </div>
-        </div>
-        <div class="mun-status-dot${hasCoord?' ok':''}"></div>
-        <div class="mun-toggle-icon">▾</div>
-      </div>
-      <div class="mun-body">
-        <div class="mun-field">
-          <label>Capital</label>
-          <input value="${m.capital}" disabled style="background:var(--gris-10);color:var(--gris-60);"/>
-        </div>
-        <div class="mun-field">
-          <label>Coordinador Municipal</label>
-          <input id="mc-coord-${i}" value="${m.coord}" placeholder="Nombre y apellido"/>
-        </div>
-        <div class="mun-field">
-          <label>Secretario Principal</label>
-          <input id="mc-sg-${i}" value="${m.sg}" placeholder="Nombre y apellido"/>
-        </div>
-        <div class="mun-field">
-          <label>WhatsApp</label>
-          <input id="mc-tel-${i}" value="${m.tel}" placeholder="+58..."/>
-        </div>
-        <button class="mun-save" id="mun-save-${i}" onclick="saveMun(${i})">Guardar</button>
-      </div>
-    </div>`;
-  }).join('');
+
+function saveData(){
+  if(!currentMuniId) return;
+  localStorage.setItem(STORAGE_PREFIX + currentMuniId, JSON.stringify(currentData));
+  showSaveIndicator();
+  renderReportPreview();
 }
- 
-function toggleMun(i){
-  document.getElementById('mc-'+i).classList.toggle('open');
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveData, 350);
 }
- 
-function saveMun(i){
-  S.muns[i].coord = document.getElementById('mc-coord-'+i).value.trim();
-  S.muns[i].sg    = document.getElementById('mc-sg-'+i).value.trim();
-  S.muns[i].tel   = document.getElementById('mc-tel-'+i).value.trim();
-  persist();
-  renderMuns();
-  // Mantener abierto el card guardado
-  setTimeout(()=>{
-    const c = document.getElementById('mc-'+i);
-    if(c) c.classList.add('open');
-  },10);
-  toast('Municipio actualizado');
+
+function showSaveIndicator(){
+  const el = document.getElementById('saveIndicator');
+  el.classList.add('show');
+  clearTimeout(showSaveIndicator._t);
+  showSaveIndicator._t = setTimeout(()=> el.classList.remove('show'), 1800);
 }
- 
-/* ================================================================
-   ORGANIGRAMA — SECRETARÍAS CDR
-   ================================================================ */
-function renderSecs(){
-  const el = document.getElementById('cdr-secs');
-  el.innerHTML = S.secs.map((s,i)=>`
-    <div class="sec-node" id="sn-${i}">
-      <div class="sec-node-hd" onclick="toggleSec(${i})">
-        <div>
-          <div class="sec-cargo">${s.cargo}</div>
-          <div class="sec-nombre">${s.nombre||'Sin asignar'}</div>
-        </div>
-        <div class="sec-chevron">▾</div>
-      </div>
-      <div class="sec-node-bd">
-        <div class="sf">
-          <label>Nombre y Apellido</label>
-          <input value="${s.nombre||''}" placeholder="Nombre..."
-            onchange="updateSec(${i},'nombre',this.value)"/>
-        </div>
-        <div class="sf">
-          <label>WhatsApp</label>
-          <input value="${s.tel||''}" placeholder="+58..."
-            onchange="updateSec(${i},'tel',this.value)"/>
-        </div>
-        ${s.tel?`<div style="margin-bottom:8px;">
-          <a href="https://wa.me/${s.tel.replace(/[^0-9]/g,'')}" target="_blank"
-             style="font-size:.68rem;color:var(--verde);font-weight:600;">💬 Contactar por WhatsApp</a>
-        </div>`:''}
-        <div style="font-size:.62rem;font-weight:700;color:var(--gris-60);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;">Propuestas</div>
-        <ul class="prop-list" id="pl-${i}">
-          ${(s.props||[]).map(p=>`<li>${p}</li>`).join('')}
-        </ul>
-        <div class="add-row">
-          <input type="text" placeholder="Nueva propuesta..." id="pi-${i}"/>
-          <button onclick="addProp(${i})">+</button>
-        </div>
-        <br>
-        <button class="del-sec" onclick="delSec(${i})">Eliminar secretaría</button>
-      </div>
-    </div>
-  `).join('');
- 
-  // Actualizar nodos top
-  document.getElementById('cdr-coord-n').textContent = S.coord || 'Ely Montañez';
-  document.getElementById('cdr-sg-n').textContent    = S.sg    || 'José Roca';
-}
- 
-function toggleSec(i){document.getElementById('sn-'+i).classList.toggle('open');}
- 
-function updateSec(i,field,val){
-  S.secs[i][field]=val;
-  persist();
-  renderSecs();
-  // reabrir
-  setTimeout(()=>{document.getElementById('sn-'+i).classList.add('open');},10);
-}
- 
-function addProp(i){
-  const inp=document.getElementById('pi-'+i);
-  if(!inp.value.trim()) return;
-  if(!S.secs[i].props) S.secs[i].props=[];
-  S.secs[i].props.push(inp.value.trim());
-  persist(); renderSecs();
-  setTimeout(()=>{document.getElementById('sn-'+i).classList.add('open');},10);
-  toast('Propuesta agregada');
-}
- 
-function delSec(i){
-  if(!confirm('¿Eliminar esta secretaría?')) return;
-  S.secs.splice(i,1);
-  persist(); renderSecs();
-  toast('Secretaría eliminada');
-}
- 
-/* ================================================================
-   NODOS TOP — EDITAR
-   ================================================================ */
-function editNode(node, cargo){
-  const val = node==='cdr-coord'?S.coord:S.sg;
-  openModalCustom('Editar: '+cargo,`
-    <div class="mf">
-      <label>Nombre y Apellido</label>
-      <input class="mf input" id="en-val" value="${val||''}"/>
-    </div>
-    <button class="modal-submit" onclick="saveNode('${node}')">Guardar</button>
-  `);
-}
- 
-function saveNode(node){
-  const v = document.getElementById('en-val').value.trim();
-  if(node==='cdr-coord') S.coord=v; else S.sg=v;
-  persist(); renderSecs(); closeModal(); toast('Actualizado');
-}
- 
-/* ================================================================
-   MODAL
-   ================================================================ */
-function openModal(type){
-  S.mCtx=type;
-  document.getElementById('m-title').textContent='Agregar Secretaría';
-  document.getElementById('m-body').innerHTML=`
-    <div class="mf">
-      <label>Nombre de la Secretaría</label>
-      <input class="modal-input" id="ms-cargo" placeholder="Ej: Secretario de Cultura"/>
-    </div>
-    <div class="mf">
-      <label>Responsable</label>
-      <input class="modal-input" id="ms-nombre" placeholder="Nombre y apellido"/>
-    </div>
-    <div class="mf">
-      <label>WhatsApp</label>
-      <input class="modal-input" id="ms-tel" placeholder="+58..."/>
-    </div>
-    <button class="modal-submit" onclick="submitModal()">Agregar</button>
-  `;
-  document.getElementById('modal').classList.add('open');
-}
- 
-function openModalCustom(title,html){
-  document.getElementById('m-title').textContent=title;
-  document.getElementById('m-body').innerHTML=html;
-  document.getElementById('modal').classList.add('open');
-}
- 
-function closeModal(){document.getElementById('modal').classList.remove('open');}
-function closeModalOut(e){if(e.target===document.getElementById('modal')) closeModal();}
- 
-function submitModal(){
-  const cargo=document.getElementById('ms-cargo').value.trim();
-  if(!cargo){alert('Ingrese el nombre de la secretaría');return;}
-  S.secs.push({
-    cargo,
-    nombre:document.getElementById('ms-nombre').value.trim(),
-    tel:document.getElementById('ms-tel').value.trim(),
-    props:[]
-  });
-  persist(); renderSecs(); closeModal(); toast('Secretaría agregada');
-}
- 
-/* ================================================================
-   TOAST
-   ================================================================ */
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent='✓ '+msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2800);
-}
- 
-/* ================================================================
-   INIT
-   ================================================================ */
-document.addEventListener('DOMContentLoaded',()=>{
-  renderMuns();
-  renderSecs();
+
+/* ============================================================
+   INIT: populate select
+   ============================================================ */
+const municipioSelect = document.getElementById('municipioSelect');
+Object.entries(MUNICIPIOS).forEach(([id,m])=>{
+  const opt = document.createElement('option');
+  opt.value = id;
+  opt.textContent = m.name + (m.capitalNote ? " — " + m.capitalNote : "");
+  municipioSelect.appendChild(opt);
 });
+
+document.getElementById('loadBtn').addEventListener('click', ()=>{
+  if(municipioSelect.value) loadMunicipio(municipioSelect.value);
+  else{ municipioSelect.focus(); showToast("Selecciona un municipio primero"); }
+});
+document.getElementById('changeMuni').addEventListener('click', ()=>{
+  document.getElementById('municipioApp').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+function loadMunicipio(id){
+  currentMuniId = id;
+  currentData = loadData(id);
+  const m = MUNICIPIOS[id];
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('municipioApp').style.display = 'block';
+
+  document.getElementById('muniFlag').src = m.flag;
+  document.getElementById('muniFlag').alt = "Bandera de " + m.name;
+  document.getElementById('muniEyebrow').textContent = "Municipio · Carabobo";
+  document.getElementById('muniName').textContent = m.name;
+  const totalParroquias = allParroquias().length;
+  document.getElementById('muniSub').textContent = totalParroquias + (totalParroquias===1?" parroquia registrada":" parroquias registradas") + (m.capitalNote ? " · " + m.capitalNote : "");
+
+  // reset to first tab
+  switchTab('mapa');
+
+  initMap(m);
+  bindEquipoInputs();
+  renderSecMuni();
+  renderParroquias();
+  renderReportPreview();
+
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function allParroquias(){
+  return currentData.parroquias.concat(currentData.customParroquias || []);
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+});
+function switchTab(tab){
+  document.querySelectorAll('.tabbtn').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.tabpanel').forEach(p=> p.classList.toggle('active', p.id === 'tab-'+tab));
+  if(tab==='mapa' && map){ setTimeout(()=> map.invalidateSize(), 150); }
+  if(tab==='reporte'){ renderReportPreview(); }
+}
+
+/* ============================================================
+   MAP
+   ============================================================ */
+function initMap(m){
+  if(map){ map.remove(); map=null; }
+  map = L.map('map', { scrollWheelZoom:false }).setView(m.coords, m.zoom);
+
+  const normal = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:19, attribution:'&copy; OpenStreetMap contributors'
+  });
+  const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom:19, attribution:'Tiles &copy; Esri'
+  });
+
+  normal.addTo(map);
+  L.control.layers({ "Vista normal": normal, "Vista satelital": satellite }, {}, { position:'topright' }).addTo(map);
+
+  L.marker(m.coords).addTo(map).bindPopup("<b>" + m.name + "</b><br>Municipio, Carabobo");
+
+  setTimeout(()=> map.invalidateSize(), 250);
+}
+
+/* ============================================================
+   EQUIPO MUNICIPAL
+   ============================================================ */
+function bindEquipoInputs(){
+  document.querySelectorAll('#tab-equipo [data-role][data-field]').forEach(input=>{
+    const role = input.dataset.role, field = input.dataset.field;
+    input.value = currentData.equipoMunicipal[role][field] || "";
+    input.oninput = ()=>{
+      currentData.equipoMunicipal[role][field] = input.value;
+      scheduleSave();
+    };
+  });
+}
+
+function renderSecMuni(){
+  const list = document.getElementById('secMuniList');
+  const secretarias = currentData.equipoMunicipal.secretarias;
+  document.getElementById('secMuniCount').textContent = secretarias.length;
+  list.innerHTML = "";
+  if(secretarias.length===0){
+    list.innerHTML = '<div class="no-items">Aún no hay secretarías agregadas. Usa "+ Agregar secretaría" para crear la primera.</div>';
+    return;
+  }
+  secretarias.forEach(sec=>{
+    list.appendChild(buildSecCard(sec, ()=>{
+      currentData.equipoMunicipal.secretarias = currentData.equipoMunicipal.secretarias.filter(s=>s.id!==sec.id);
+      renderSecMuni(); saveData();
+    }));
+  });
+}
+
+document.getElementById('addSecMuni').addEventListener('click', ()=>{
+  currentData.equipoMunicipal.secretarias.push(blankSecretaria());
+  renderSecMuni();
+  saveData();
+  const cards = document.querySelectorAll('#secMuniList .sec-card');
+  if(cards.length) cards[cards.length-1].querySelector('input[data-field="area"]').focus();
+});
+
+function buildSecCard(sec, onDelete){
+  const card = document.createElement('div');
+  card.className = 'sec-card';
+  card.innerHTML = `
+    <div class="ffield"><label>Nombre de la secretaría</label>
+      <input type="text" data-field="area" placeholder="Ej. Secretaría de Deporte" value="${escapeAttr(sec.area)}"></div>
+    <div class="ffield"><label>Nombre y apellido</label>
+      <input type="text" data-field="nombre" placeholder="Nombre completo" value="${escapeAttr(sec.nombre)}"></div>
+    <div class="ffield"><label>Teléfono</label>
+      <input type="tel" data-field="telefono" placeholder="04XX-XXXXXXX" value="${escapeAttr(sec.telefono)}"></div>
+    <div class="del-wrap"><button class="btn btn-danger" type="button">Eliminar</button></div>
+  `;
+  card.querySelector('[data-field="area"]').oninput = e=>{ sec.area = e.target.value; scheduleSave(); };
+  card.querySelector('[data-field="nombre"]').oninput = e=>{ sec.nombre = e.target.value; scheduleSave(); };
+  card.querySelector('[data-field="telefono"]').oninput = e=>{ sec.telefono = e.target.value; scheduleSave(); };
+  card.querySelector('.btn-danger').onclick = ()=>{
+    if(confirm('¿Eliminar esta secretaría? Esta acción no se puede deshacer.')) onDelete();
+  };
+  return card;
+}
+
+/* ============================================================
+   PARROQUIAS
+   ============================================================ */
+function renderParroquias(){
+  const wrap = document.getElementById('parroquiaList');
+  const items = allParroquias();
+  document.getElementById('parroquiaCount').textContent = items.length;
+  wrap.innerHTML = "";
+  items.forEach((p, idx)=>{
+    wrap.appendChild(buildParroquiaItem(p, idx));
+  });
+}
+
+function buildParroquiaItem(p, idx){
+  const item = document.createElement('div');
+  item.className = 'parroquia-item' + (openParroquia===p.id ? ' open' : '');
+
+  const filled = [p.coordinador.nombre, p.secgeneral.nombre].filter(Boolean).length;
+  const secCount = p.secretarias.length;
+
+  const head = document.createElement('div');
+  head.className = 'parroquia-head';
+  head.innerHTML = `
+    <div class="left">
+      <div class="idx">${String(idx+1).padStart(2,'0')}</div>
+      <div>
+        <h4>Parroquia ${escapeHtml(p.nombre)}</h4>
+        <div class="meta">${filled}/2 roles principales · ${secCount} secretaría${secCount===1?'':'s'}</div>
+      </div>
+    </div>
+    <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+  `;
+  head.addEventListener('click', ()=>{
+    openParroquia = (openParroquia === p.id) ? null : p.id;
+    renderParroquias();
+  });
+
+  const body = document.createElement('div');
+  body.className = 'parroquia-body';
+  const inner = document.createElement('div');
+  inner.className = 'parroquia-body-inner';
+
+  inner.innerHTML = `
+    <div class="role-grid" style="margin-top:16px;">
+      <div class="role-block">
+        <div class="role-label"><div class="ico">CP</div><div class="txt">Coordinador Parroquial</div></div>
+        <div class="ffield"><label>Nombre y apellido</label><input type="text" data-role="coordinador" data-field="nombre" value="${escapeAttr(p.coordinador.nombre)}" placeholder="Nombre completo"></div>
+        <div class="ffield"><label>Teléfono</label><input type="tel" data-role="coordinador" data-field="telefono" value="${escapeAttr(p.coordinador.telefono)}" placeholder="04XX-XXXXXXX"></div>
+      </div>
+      <div class="role-block">
+        <div class="role-label"><div class="ico">SP</div><div class="txt">Secretario Parroquial</div></div>
+        <div class="ffield"><label>Nombre y apellido</label><input type="text" data-role="secgeneral" data-field="nombre" value="${escapeAttr(p.secgeneral.nombre)}" placeholder="Nombre completo"></div>
+        <div class="ffield"><label>Teléfono</label><input type="tel" data-role="secgeneral" data-field="telefono" value="${escapeAttr(p.secgeneral.telefono)}" placeholder="04XX-XXXXXXX"></div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:22px; margin-bottom:12px;">
+      <h4 style="font-size:13.5px; font-weight:700; color:var(--gold-300);">Secretarías de la parroquia <span class="num-tag">${p.secretarias.length}</span></h4>
+      <button class="btn btn-ghost btn-sm addSecParroquia">+ Agregar secretaría</button>
+    </div>
+    <div class="sec-list secListParroquia"></div>
+    ${p.isCustom ? `<div style="margin-top:18px; text-align:right;"><button class="btn btn-danger deleteParroquia">Eliminar parroquia</button></div>` : ''}
+  `;
+
+  // bind role inputs
+  inner.querySelectorAll('[data-role][data-field]').forEach(input=>{
+    input.oninput = ()=>{
+      p[input.dataset.role][input.dataset.field] = input.value;
+      scheduleSave();
+    };
+  });
+
+  // secretarias list
+  const secListEl = inner.querySelector('.secListParroquia');
+  function renderSecP(){
+    secListEl.innerHTML = "";
+    if(p.secretarias.length===0){
+      secListEl.innerHTML = '<div class="no-items">Sin secretarías aún.</div>';
+      return;
+    }
+    p.secretarias.forEach(sec=>{
+      secListEl.appendChild(buildSecCard(sec, ()=>{
+        p.secretarias = p.secretarias.filter(s=>s.id!==sec.id);
+        renderSecP();
+        renderParroquias.countUpdate && renderParroquias.countUpdate();
+        saveData();
+      }));
+    });
+  }
+  renderSecP();
+
+  inner.querySelector('.addSecParroquia').onclick = ()=>{
+    p.secretarias.push(blankSecretaria());
+    renderSecP();
+    saveData();
+    const cards = secListEl.querySelectorAll('.sec-card');
+    if(cards.length) cards[cards.length-1].querySelector('input[data-field="area"]').focus();
+  };
+
+  const delBtn = inner.querySelector('.deleteParroquia');
+  if(delBtn){
+    delBtn.onclick = ()=>{
+      if(confirm(`¿Eliminar la parroquia "${p.nombre}"? Se perderán todos sus datos.`)){
+        currentData.customParroquias = currentData.customParroquias.filter(x=>x.id!==p.id);
+        openParroquia = null;
+        renderParroquias();
+        saveData();
+      }
+    };
+  }
+
+  body.appendChild(inner);
+  item.appendChild(head);
+  item.appendChild(body);
+  return item;
+}
+
+document.getElementById('addParroquiaBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('newParroquiaInput');
+  const name = input.value.trim();
+  if(!name){ input.focus(); return; }
+  const newP = {
+    id: cryptoId(), nombre:name, isCustom:true,
+    coordinador: blankPersona(), secgeneral: blankPersona(), secretarias: []
+  };
+  currentData.customParroquias.push(newP);
+  input.value = "";
+  openParroquia = newP.id;
+  renderParroquias();
+  saveData();
+  document.getElementById('muniSub').textContent = allParroquias().length + " parroquias registradas";
+});
+
+/* ============================================================
+   REPORT
+   ============================================================ */
+function buildReportText(){
+  const m = MUNICIPIOS[currentMuniId];
+  const eq = currentData.equipoMunicipal;
+  let lines = [];
+  lines.push(`*REPORTE DE EQUIPO — MUNICIPIO ${m.name.toUpperCase()}*`);
+  lines.push(`_Concertación Carabobo_`);
+  lines.push(``);
+  lines.push(`*EQUIPO MUNICIPAL*`);
+  lines.push(`Coordinador Municipal: ${eq.coordinador.nombre || '(sin asignar)'}${eq.coordinador.telefono ? ' — ' + eq.coordinador.telefono : ''}`);
+  lines.push(`Secretario General Municipal: ${eq.secgeneral.nombre || '(sin asignar)'}${eq.secgeneral.telefono ? ' — ' + eq.secgeneral.telefono : ''}`);
+  if(eq.secretarias.length){
+    lines.push(`Secretarías municipales:`);
+    eq.secretarias.forEach(s=>{
+      lines.push(`  • ${s.area || '(sin nombre)'}: ${s.nombre || '(sin asignar)'}${s.telefono ? ' — ' + s.telefono : ''}`);
+    });
+  }
+  lines.push(``);
+  lines.push(`*PARROQUIAS (${allParroquias().length})*`);
+  allParroquias().forEach(p=>{
+    lines.push(``);
+    lines.push(`— Parroquia ${p.nombre} —`);
+    lines.push(`Coordinador Parroquial: ${p.coordinador.nombre || '(sin asignar)'}${p.coordinador.telefono ? ' — ' + p.coordinador.telefono : ''}`);
+    lines.push(`Secretario Parroquial: ${p.secgeneral.nombre || '(sin asignar)'}${p.secgeneral.telefono ? ' — ' + p.secgeneral.telefono : ''}`);
+    if(p.secretarias.length){
+      p.secretarias.forEach(s=>{
+        lines.push(`  • ${s.area || '(sin nombre)'}: ${s.nombre || '(sin asignar)'}${s.telefono ? ' — ' + s.telefono : ''}`);
+      });
+    }
+  });
+  lines.push(``);
+  lines.push(`_Generado desde la herramienta de Coordinación Municipal_`);
+  return lines.join('\n');
+}
+
+function renderReportPreview(){
+  if(!currentMuniId) return;
+  document.getElementById('reportPreview').textContent = buildReportText();
+}
+
+document.getElementById('sendReportBtn').addEventListener('click', ()=>{
+  const text = buildReportText();
+  const url = `https://wa.me/${REPORT_PHONE}?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+  showToast('Abriendo WhatsApp con el reporte…');
+});
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(str){ return escapeHtml(str); }
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 2600);
+}
 </script>
 </body>
 </html>
